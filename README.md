@@ -5,3 +5,7 @@ Ce projet  consiste dansune première partie en l'élaboration d'un dataset avec
 Pour chaque pays, on cherche certaines informations comme la fréquence d'actualisation des données, la licence utilisée, le mode de transport concerné ou encore la granularité territoriale correspondant au jeu de données. On pourra ensuite réaliser des visualisations sur Power BI pour comparer la situation entre les différents pays.
 
 Losqu'elle est fournie, on utilisera l'API donnée par le pays, ou bien le fichier json disponible dans les requêtes de la page. Sinon, en dernier recours, on scrappera la page html en essayer de chercher les bonnes métadonnées dans les bonnes balises.
+
+
+
+Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés

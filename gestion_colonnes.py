@@ -294,7 +294,90 @@ def gestion_theme(df):
         df['Thème du dataset'] = df['Tags'].combine_first(df['Thème du dataset'])
     
     return df
+"""
+def granularite_gpt(df):
+    # Ajoute une colonne 'Zone couverte' initialement vide
+    df['Zone couverte'] = ''
+    
+    # Remplir la colonne 'Zone couverte' selon les conditions données
+    df.loc[df['Pays'] == 'Luxembourg', 'Zone couverte'] = df['Granularité de la couverture territoriale']
+    df.loc[df['Pays'] == 'Belgique', 'Zone couverte'] = df['Zone couverte par la publication']
+    df.loc[df['Pays'] == 'Italie', 'Zone couverte'] = df['Publié par']
+    
+    return df
 
+"""
+def granularite(df):
+
+    renommage = { 'Belgique' : {'VLAAMS GEWEST' : 'Région Flamande', 
+                 'RÉGION DE BRUXELLES-CAPITALE/BRUSSELS HOOFDSTEDELIJK GEWEST' : 'Région Bruxelles-Capitale',
+                 'RÉGION DE BRUXELLES-CAPITALE/BRUSSELS HOOFDSTEDELIJK GEWESTVLAAMS GEWESTRÉGION WALLONNE' : 'Pays',
+                 'RÉGION DE BRUXELLES-CAPITALE/BRUSSELS HOOFDSTEDELIJK GEWESTRÉGION WALLONNE' : 'Région Bruxelles-Capitale et Wallonne',
+                 'RÉGION WALLONNE' : 'Région Wallonne',
+                 'RÉGION DE BRUXELLES-CAPITALE/BRUSSELS HOOFDSTEDELIJK GEWESTVLAAMS GEWEST' : 'Région Bruxelles-Capitale et Flamande'},
+                'Italie' : {'ATM Milano' : 'Région Lombardia', 'Regione Abruzzo' : 'Région Abruzzo', 'Regione Campania' : 'Région Campania', 'Regione Autonoma Friuli Venezia Giulia' : 'Région Autonome Friuli Venezia Giulia', 'Regione Lazio' : 'Région Lazio', 'Regione Liguria' : 'Région Liguria', 'Regione Marche' : 'Région Marche', 'Regione Piemonte' : 'Région Piemonte', 'Regione Puglia' : 'Région Puglia', 'Regione Emilia-Romagna' : 'Région Emilia-Romagna', 'Regione Toscana' : 'Région Toscana', 'Provincia di Bolzano' : 'Province de Bolzano', 'Trentino Trasporti' : 'Province de Trento', 'Regione Veneto' : 'Région Veneto'},
+                'Luxembourg' : {'country' : 'Pays', 'poi' : "Points d'intérêt", 'grande-region' : 'Région', 'lu:commune' : 'Commune'}
+    }
+    #Granularité de la couverture territoriale (Luxembourg), rien pour l'irlande, rien pour l'espagne, Zone couverte par la publication (Belgique), Publié par (Italie)
+    if 'Granularité de la couverture territoriale' in df.columns:
+        df['Zone couverte'] = df['Granularité de la couverture territoriale']
+    
+    if 'Zone couverte par la publication' in df.columns:
+        df['Zone couverte'] = df['Zone couverte par la publication'].combine_first(df['Zone couverte'])
+
+    if 'Publié par' in df.columns:
+        df.loc[df['Pays'] == 'Italie', 'Zone couverte'] = df.loc[df['Pays'] == 'Italie', 'Publié par']
+    
+    def map_zone(row):
+        country = row['Pays']
+        zone = row['Zone couverte']
+        if country in renommage and zone in renommage[country]:
+            return renommage[country][zone]
+        return ''
+
+    df['Zone couverte simplifiée'] = df.apply(map_zone, axis=1)
+
+    return df
+
+"""
+
+def gestion_score(df):
+    #Colonnes concernées : Openness rating (irlande, sous la forme d'étoiles de 0 à 5 étoiles) et Qualité (luxembourg, sous la forme {'all_resources_available': True, 'dataset_description_quality': True, 'has_open_format': True, 'has_resources': True, 'license': True, 'resources_documentation': False, 'score': 0.5555555555555556, 'spatial': True, 'temporal_coverage': False, 'update_frequency': False})
+    #on va tout mettre sous la forme d'un score sur 10, mais la question c'est est-ce qu'on transforme un peu les données d'un des deux pays pour faire en sorte que la moyenne soit proche entre les deux pays, en considérant que l'un de deux pays a un système de notation plus dur que l'autre.
+    # Filtrer les lignes pour Irlande et Luxembourg
+
+    def normalize_score(value, min_val, max_val):
+    #Normalise un score entre 0 et 1
+        return (value - min_val) / (max_val - min_val)
+    
+
+    # Convertir les valeurs de la colonne 'Openness rating' en nombres, en gérant les erreurs
+    df['Openness rating'] = pd.to_numeric(df['Openness rating'], errors='coerce')
+    
+    # Normaliser les scores d'Irlande (0-5 étoiles) vers 0-1 puis 0-10
+    df['Openness rating'] = df['Openness rating'].apply(lambda x: normalize_score(x, 0, 5) * 10 if not np.isnan(x) else np.nan)
+    
+    # Calculer les scores pour le Luxembourg en multipliant par 10 et arrondissant à l'entier le plus proche
+    df['Score Luxembourg'] = df['Qualité'].apply(
+        lambda x: round(x['score'] * 10) if isinstance(x, dict) and 'score' in x else np.nan)
+    
+    # Ajuster les moyennes des scores pour les rendre comparables
+    irlande_mean = df.loc[df['Pays'] == 'Irlande', 'Openness rating'].mean()
+    luxembourg_mean = df.loc[df['Pays'] == 'Luxembourg', 'Score Luxembourg'].mean()
+    
+    adjustment_factor = irlande_mean / luxembourg_mean
+    
+    df.loc[df['Pays'] == 'Luxembourg', 'Score Luxembourg'] *= adjustment_factor
+    
+    # Fusionner les scores normalisés dans une colonne commune 'Qualité du dataset'
+    df['Qualité du dataset'] = df['Openness rating'].combine_first(df['Score Luxembourg'])
+    
+    # Supprimer les colonnes intermédiaires
+    df.drop(columns=['Openness rating', 'Score Luxembourg'], inplace=True)
+    
+    return df
+
+"""
 df=gestion_url(data_frame)
 df=formats(df)
 df=split_langues(df)
@@ -305,16 +388,17 @@ df=gestion_titre(df)
 df=gestion_langue(df)
 df=gestion_mode_transport(df)
 df=gestion_theme(df)
+#df=gestion_score(df)
+df=granularite(df)
 
 
 #tant qu'à faire, profitions en pour supprimer des colonnes inutiles
 df = df.drop(columns=["Unnamed: 0", "Acronyme", "Archivé", "Badges", "Extras", "Propriétaire", "Privé", "Couverture temporelle", "Descripción de los criterios de calidad", "Network coverage", "Date de fin de publication", "Portée du jeu de données"])
 #colonnes presque vides
 #
-df = df.drop(columns=['Categoría tipo del conjunto de datos', 'Thème', 'Thème du jeu de données', 'Theme', 'Tags', 'Category type',  "Language", 'Frecuencia de actualización', 'Fréquence de mise à jour', 'Fréquence', 'Update frequency', "Lenguaje de los metadatos", "Lenguaje del conjunto de datos", "Modo de transporte", "Licence", "Licencia de uso", "Descripción de la licencia de uso", "Languages of the dataset", "Transportation mode covered", "Contrat ou licence", "Type de licence"])
+df = df.drop(columns=['Categoría tipo del conjunto de datos', 'Catégorie', 'Thème', 'Thème du jeu de données', 'Theme', 'Tags', 'Category type',  "Language", 'Frecuencia de actualización', 'Fréquence de mise à jour', 'Fréquence', 'Update frequency', "Lenguaje de los metadatos", "Lenguaje del conjunto de datos", "Modo de transporte", "Licence", "Licencia de uso", "Descripción de la licencia de uso", "Languages of the dataset", "Transportation mode covered", "Contrat ou licence", "Type de licence"])
 #colonnes combinées ou traitées ailleurs
 
-df.rename(columns={'Catégorie': 'Thème'}, inplace=True)
 
 
 

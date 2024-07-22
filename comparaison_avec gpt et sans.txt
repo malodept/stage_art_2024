@@ -1,0 +1,33 @@
+fonction granularite comparaison utilisation de chat gpt et pas d'utilisation de chat gpt :
+
+il y avait deux parties dans la conception de la fonction, premièrement la fusion des colonnes et ensuite le renommage de cases.
+La première partie m'a pris environ 10min le temps d'identifier les bonnes colonnes dans la table, et les bonnes fonctions à utiliser ainsi que la gestion d'une erreur : 
+df.loc[df['Pays'] == 'Italie', 'Zone couverte'] = df.loc[df['Pays'] == 'Italie', 'Publié par']
+Ici, j'avais inversé 'Zone couverte' et 'Publié par' et je me retrouvais avec un AttributeError: 'NoneType' object has no attribute 'drop'
+
+En utilisant complètement chat gpt, le temps formuler le prompt : "écris une fonction granularite qui prend en entrée df, en ressort df modifié 
+(mais toujours la variable df) avec une colonne en plus 'Zone couverte' qui copie la valeur de la colonne 'Granularité de la couverture territoriale' 
+pour les lignes dont la colonne 'Pays' vaut 'Luxembourg', qui copie 'Zone couverte par la publication' pour les lignes dont la colonne 'Pays' vaut 'Belgique', 
+et 'Publié par' pour 'Italie'" a été d'environ 1min, et la fonction proposée fonctionnait directement et était d'ailleurs plus simple que la mienne et mieux commentée
+
+En utilisant chat gpt simplement comme aide, cela m'aurait permis de résoudre mon erreur plus rapidement juste en copiant collant mon code et 
+l'erreur renvoyée, et chat gpt l'aurait corrigée directement.
+
+Ensuite, pour le renommage, à la main cela m'a pris un vingtaine de minutes pour écrire le dictionnaire de correspondance entre l'ancienne valeur et 
+la nouvelle valeur plus parlante et uniformisée. Il a fallu aussi comprendre certains termes en flamand,
+et trouver une idée d'uniformisation. Et ensuite cinq minutes pour la fonction map_zone pour renommer les cases 
+
+Avec chat gpt, étant donné le désordre et la quantité des données, il n'a pas été efficace de copier coller toutes les anciennes cases de la colonne 
+Zone couverte mais il était plus intéressant de faire cela au cas par cas, pour chaque pays en demandant de respecter certaines règles comme écrire en 
+français...
+Et aussi en demandant la stratégie la plus adaptée pour le renommage
+Ainsi, la constitution du dictionnaire doit aussi se faire à la main selon les besoins, et la fonction map_zone est codée très rapidement avec chat gpt.
+
+Conclusion :
+- erreurs il faut utiliser juste en copiant collant
+- donne de bonnes idées de stratégies de code, structure, commentaires, noms de variables...
+- possible de faire des petites fonctions juste en disant dans le prompt ce qu'elle doit prendre en entrée et ce qu'elle doit ressortir, 
+et il faut donner le contexte nécessaire, pour moi il faut abuser de ça
+- pas à l'aise avec bcp de données (au-delà d'une centaine de lignes à traiter/modifier c'est compliqué d'après mon expérience, mais on peut alors 
+l'utiliser en tant qu'assistant, au lieu de faire bcp de recherches google chat gpt aura un meilleur contexte, et surtout on peut lui donner le contexte, 
+lui fournir l'architecture du projet, ses objectifs...

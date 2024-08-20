@@ -6,6 +6,7 @@ Pour chaque pays, on cherche certaines informations comme la fréquence d'actual
 
 Losqu'elle est fournie, on utilisera l'API donnée par le pays, ou bien le fichier json disponible dans les requêtes de la page. Sinon, en dernier recours, on scrappera la page html en essayer de chercher les bonnes métadonnées dans les bonnes balises.
 
+On utilisera aussi le modèle Llama de Meta AI pour trouver des informations qui ne sont pas directement disponibles.
 
 
-Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés
+Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés.

@@ -8,5 +8,6 @@ Losqu'elle est fournie, on utilisera l'API donnée par le pays, ou bien le fichi
 
 On utilisera aussi le modèle Llama de Meta AI pour trouver des informations qui ne sont pas directement disponibles.
 
+Après avoir collecté les données, une partie nécessaire est le traitement des données pour assurer la pertinence des analyses. On pourra alors trouver dans gestion_colonnes.py l'ensemble du processus de gestion des colonnes, principalement la fusion de colonnes, le renommage de données, et l'uniformisation de données qui pourraient différer entre les pays.
 
 Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés.

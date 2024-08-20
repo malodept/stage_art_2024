@@ -1,4 +1,4 @@
-ss# stage_art_2024
+stage_art_2024
 
 Ce projet  consiste dans une première partie en l'élaboration d'un dataset avec en colonnes des noms de métadonnées et en lignes des jeux de données disponibles. L'objectif est d'extraire les métadonnées de tous les datasets sur des sujets de transport mis à disposition par les différents points d'accès nationaux des pays de l'Union Européenne.
 

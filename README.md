@@ -10,4 +10,4 @@ On utilisera aussi le modèle Llama de Meta AI en passant par l'application GPT4
 
 Après avoir collecté les données, une partie nécessaire est le traitement des données pour assurer la pertinence des analyses. On pourra alors trouver dans gestion_colonnes.py l'ensemble du processus de gestion des colonnes, principalement la fusion de colonnes, le renommage de données, et l'uniformisation de données qui pourraient différer entre les pays.
 
-Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés.
+Réalisé par Malo de Pastor à l'Autorité de Régulation des Transports, au sein de la direction de l'observation des marchés (du 24 juin 2024 au 23 août 2024)

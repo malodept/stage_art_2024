@@ -78,10 +78,6 @@ def gestion_url(df):
         for idx, italy_idx in enumerate(italy_indices):
             df.loc[italy_idx, 'URL'] = italy_urls[idx % len(italy_urls)]  
 
-    if 'url' in df.columns:    
-        df['URL'] = df['URL'].combine_first(df['url'])
-
-
     return df
 
 def formats(df):
@@ -121,7 +117,8 @@ def split_langues(df):
     #df_exploded.to_excel('C:/Users/m-de-pastor/Desktop/Un peut tout/fichiers_concatenes.xlsx', index=False)
 
 def liste_des_freq_d_actualisation(df):
-    df["Fréquence d'actualisation"] = df[['Frecuencia de actualización', 'Fréquence de mise à jour', 'Fréquence', 'Update frequency', 'frequency']].bfill(axis=1).iloc[:, 0]
+
+    df["Fréquence d'actualisation"] = df[['Frecuencia de actualización', 'Fréquence de mise à jour', 'Fréquence', 'Update frequency']].bfill(axis=1).iloc[:, 0]
 
     frequency_mapping = {
     'Less frequent than yearly': 'Other/On occurence',
@@ -165,11 +162,6 @@ def liste_des_freq_d_actualisation(df):
 
 
     df["Fréquence d'actualisation"] = df["Fréquence d'actualisation"].apply(lambda x: frequency_mapping.get(x, np.nan))
-
-    
-    if 'update_frequency' in df.columns:
-        df["Fréquence d'actualisation"] = df['update_frequency'].combine_first(df["Fréquence d'actualisation"])
-    
 
     return df
     #df.to_excel('C:/Users/m-de-pastor/Desktop/Un peut tout/fichiers_concatenes.xlsx', index=False)
@@ -238,9 +230,6 @@ def gestion_licence_2(df):
     licences = {row["Licence Combinée Simplifiée"]: (row['Pays'], row['Count']) for _, row in count_df.iterrows()}
 
     print(licences)
-
-    if 'license_title' in df.columns:
-        df['Licence Combinée Simplifiée'] = df['license_title'].combine_first(df['Licence Combinée Simplifiée'])
     return df
 
     #df.to_excel('C:/Users/m-de-pastor/Desktop/Un peut tout/fichiers_concatenes.xlsx', index=False)
@@ -261,10 +250,9 @@ def gestion_titre(df):
     df['Titre'] = df['Titre'].combine_first(df['Nombre del conjunto de datos'])
     df['Titre'] = df['Titre'].combine_first(df['Nom'])
     df['Titre'] = df['Titre'].combine_first(df['name'])
-    df['Titre'] = df['Titre'].combine_first(df['title'])
 
 
-    df = df.drop(columns=["Nombre del conjunto de datos", "Nom", "name", "title"])
+    df = df.drop(columns=["Nombre del conjunto de datos", "Nom", "name"])
 
 
     
@@ -310,9 +298,6 @@ def gestion_theme(df):
     if 'Tags' in df.columns:
         df['Thème du dataset'] = df['Tags'].combine_first(df['Thème du dataset'])
     
-    if 'theme-primary' in df.columns:
-        df['Thème du dataset'] = df['theme-primary'].combine_first(df['Thème du dataset'])
-
     return df
 """
 def granularite_gpt(df):
@@ -336,8 +321,7 @@ def granularite(df):
                  'RÉGION WALLONNE' : 'Région Wallonne',
                  'RÉGION DE BRUXELLES-CAPITALE/BRUSSELS HOOFDSTEDELIJK GEWESTVLAAMS GEWEST' : 'Région Bruxelles-Capitale et Flamande'},
                 'Italie' : {'ATM Milano' : 'Région Lombardia', 'Regione Abruzzo' : 'Région Abruzzo', 'Regione Campania' : 'Région Campania', 'Regione Autonoma Friuli Venezia Giulia' : 'Région Autonome Friuli Venezia Giulia', 'Regione Lazio' : 'Région Lazio', 'Regione Liguria' : 'Région Liguria', 'Regione Marche' : 'Région Marche', 'Regione Piemonte' : 'Région Piemonte', 'Regione Puglia' : 'Région Puglia', 'Regione Emilia-Romagna' : 'Région Emilia-Romagna', 'Regione Toscana' : 'Région Toscana', 'Provincia di Bolzano' : 'Province de Bolzano', 'Trentino Trasporti' : 'Province de Trento', 'Regione Veneto' : 'Région Veneto'},
-                'Luxembourg' : {'country' : 'Pays', 'poi' : "Points d'intérêt", 'grande-region' : 'Région', 'lu:commune' : 'Commune'},
-                'UK' : {'Country' : 'Pays'}
+                'Luxembourg' : {'country' : 'Pays', 'poi' : "Points d'intérêt", 'grande-region' : 'Région', 'lu:commune' : 'Commune'}
     }
     #Granularité de la couverture territoriale (Luxembourg), rien pour l'irlande, rien pour l'espagne, Zone couverte par la publication (Belgique), Publié par (Italie)
     if 'Granularité de la couverture territoriale' in df.columns:
@@ -349,8 +333,6 @@ def granularite(df):
     if 'Publié par' in df.columns:
         df.loc[df['Pays'] == 'Italie', 'Zone couverte'] = df.loc[df['Pays'] == 'Italie', 'Publié par']
     
-    
-    
     def map_zone(row):
         country = row['Pays']
         zone = row['Zone couverte']
@@ -360,11 +342,254 @@ def granularite(df):
 
     df['Zone couverte simplifiée'] = df.apply(map_zone, axis=1)
 
-    if 'geographic_granularity' in df.columns:
-        df['Zone couverte simplifiée'] = df['geographic_granularity'].combine_first(df['Zone couverte simplifiée'])
-
     return df
 
+
+def combine_update_dates(df):
+    # Liste des colonnes relatives à la date de mise à jour
+    update_date_columns = [
+        'Date updated', 
+        'Dernière mise à jour de ressource', 
+        'Date de dernière mise à jour', 
+        'metadata_modified', 
+        'modified', 
+        'date_updated', 
+        'Last Updated'
+    ]
+    
+    # Créer une nouvelle colonne "Date de mise à jour" en prenant la première valeur non nulle
+    df['Date de mise à jour'] = df[update_date_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=update_date_columns, inplace=True)
+    
+    return df
+
+def combine_creation_dates(df):
+    # Liste des colonnes relatives à la date de création
+    creation_date_columns = [
+        'Date de création', 
+        'creationDate', 
+        'metadata_created'
+    ]
+    
+    # Créer une nouvelle colonne "Date de création" en prenant la première valeur non nulle
+    df['Date de création'] = df[creation_date_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=creation_date_columns, inplace=True)
+    
+    return df
+
+def combine_valid_from_dates(df):
+    # Liste des colonnes relatives à la date de début de validité
+    valid_from_date_columns = [
+        'Valid from', 
+        'Válido desde', 
+        'Valide depuis', 
+        'startDate', 
+        'schema:startDate'
+    ]
+    
+    # Créer une nouvelle colonne "Date de début de validité" en prenant la première valeur non nulle
+    df['Date de début de validité'] = df[valid_from_date_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=valid_from_date_columns, inplace=True)
+    
+    return df
+
+
+def combine_valid_until_dates(df):
+    # Liste des colonnes relatives à la date de fin de validité
+    valid_until_date_columns = [
+        'Válido hasta',  
+        'endDate', 
+        'schema:endDate'
+    ]
+    
+    # Créer une nouvelle colonne "Date de fin de validité" en prenant la première valeur non nulle
+    df['Date de fin de validité'] = df[valid_until_date_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=valid_until_date_columns, inplace=True)
+    
+    return df
+
+def combine_data_owner(df):
+    # Liste des colonnes relatives au propriétaire des données
+    data_owner_columns = [
+        'Data Owner', 
+        'Data Owner Email', 
+        'Data Owner Telephone', 
+        'Propriétaire des données',
+        'owner_org',
+        'contactPoint'
+    ]
+    
+    # Créer une nouvelle colonne "Propriétaire des données" en prenant la première valeur non nulle
+    df['Propriétaire des données'] = df[data_owner_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=data_owner_columns, inplace=True)
+    
+    return df
+
+def combine_contact_emails(df):
+    # Liste des colonnes relatives aux emails de contact
+    contact_email_columns = [
+        'E-mail [éditeur]',
+        'Email owner',
+        'Email publisher',
+        'contact-email',
+        'hasEmail',
+        'mbox',
+        'Correo electrónico del Responsable de los metadatos'
+    ]
+    
+    # Créer une nouvelle colonne "Email de contact" en prenant la première valeur non nulle
+    df['Email de contact'] = df[contact_email_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=contact_email_columns, inplace=True)
+    
+    return df
+
+def combine_resource_types(df):
+    # Liste des colonnes relatives au type de ressource
+    resource_type_columns = [
+        'Type de ressource', 
+        'Tipo de recurso', 
+        'Resource type', 
+        'Type du jeu de données',
+        'NAP type', 
+        'Type de NAP', 
+        'NeTEx category', 
+        'Dataset', 
+        'distribution', 
+        'theme', 
+        'core-dataset', 
+        'type'
+    ]
+    
+    # Créer une nouvelle colonne "Type de ressource" en prenant la première valeur non nulle
+    df['Type de ressource'] = df[resource_type_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=resource_type_columns, inplace=True)
+    
+    return df
+
+def combine_tags(df):
+    # Liste des colonnes relatives aux tags ou mots-clés
+    tags_columns = [
+        'Tags_italy',
+        'Tags_chypre',
+        'keywords.en',
+        'tags'
+    ]
+    
+    # Créer une nouvelle colonne "Tags" en prenant la première valeur non nulle
+    df['Tags'] = df[tags_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=tags_columns, inplace=True)
+    
+    return df
+
+def combine_identifiers(df):
+    # Liste des colonnes relatives aux identifiants uniques
+    identifier_columns = [
+        'ID',
+        'adms:identifier',
+        'dct:identifier',
+        'identifier',
+        'System ID'
+    ]
+    
+    # Créer une nouvelle colonne "Identifiant" en prenant la première valeur non nulle
+    df['Identifiant'] = df[identifier_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=identifier_columns, inplace=True)
+    
+    return df
+
+def combine_urls(df):
+    # Liste des colonnes relatives aux URL
+    url_columns = [
+        'URL',
+        'System URL',
+        'Feed URL',
+        'accessURL',
+        'downloadURL',
+        'permalink'
+    ]
+    
+    # Créer une nouvelle colonne "URL" en prenant la première valeur non nulle
+    df['URL'] = df[url_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=url_columns, inplace=True)
+    
+    return df
+
+def combine_contact_names(df):
+    # Liste des colonnes relatives aux noms de contacts
+    contact_name_columns = [
+        'Nom [point de contact]',
+        'contact-name',
+        'foi-name'
+    ]
+    
+    # Créer une nouvelle colonne "Nom du contact" en prenant la première valeur non nulle
+    df['Nom du contact'] = df[contact_name_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=contact_name_columns, inplace=True)
+    
+    return df
+
+
+def combine_phone_numbers(df):
+    # Liste des colonnes relatives aux numéros de téléphone
+    phone_columns = [
+        'Phone Number',
+        'contact-phone',
+        'foi-phone',
+        'Numéro de téléphone [éditeur]',
+    ]
+    
+    # Créer une nouvelle colonne "Téléphone" en prenant la première valeur non nulle
+    df['Téléphone'] = df[phone_columns].bfill(axis=1).iloc[:, 0]
+    
+    # Supprimer les anciennes colonnes utilisées pour cette fusion
+    df.drop(columns=phone_columns, inplace=True)
+    
+    return df
+
+
+
+def add_country_code(df):
+    # Dictionnaire de correspondance des noms de pays aux codes de pays
+    country_code_mapping = {
+        'Irlande': 'IE',
+        'Luxembourg': 'LU',
+        'Espagne': 'ES',
+        'Italie': 'IT',
+        'Belgique': 'BE',
+        'Chypre': 'CY',
+        'Suisse': 'CH',
+        'UK': 'GB',
+        'Germany': 'DE',
+        'Poland': 'PL',
+        'Norway': 'NO'
+    }
+    
+    # Ajouter la colonne 'Code Pays' en utilisant la correspondance
+    df['Code Pays'] = df['Pays'].map(country_code_mapping)
+    
+    return df
 """
 
 def gestion_score(df):
@@ -416,6 +641,23 @@ df=gestion_mode_transport(df)
 df=gestion_theme(df)
 #df=gestion_score(df)
 df=granularite(df)
+df=combine_update_dates(df)
+df=combine_creation_dates(df)
+df=combine_valid_from_dates(df)
+df=combine_valid_until_dates(df)
+df=combine_data_owner(df)
+df=combine_contact_emails(df)
+df=combine_resource_types(df)
+df=combine_tags(df)
+df=combine_identifiers(df)
+df=combine_urls(df)
+df=combine_contact_names(df)
+df=combine_phone_numbers(df)
+df=add_country_code(df)
+
+
+
+#trucs qui marchent pas : 'organization.URL', 'resource type', 'email', \'Valid until\', "Valide jusqu\'à", 'hasTelephone'
 
 
 #tant qu'à faire, profitions en pour supprimer des colonnes inutiles

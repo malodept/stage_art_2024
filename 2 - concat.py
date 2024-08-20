@@ -32,10 +32,11 @@ excel_files = ['C:/Users/m-de-pastor/Desktop/Un peut tout/ireland_test.xlsx',
                'C:/Users/m-de-pastor/Desktop/Un peut tout/suisse.xlsx',
                'C:/Users/m-de-pastor/Desktop/Un peut tout/uk.xlsx',
                'C:/Users/m-de-pastor/Desktop/Un peut tout/germany.xlsx',
-               'C:/Users/m-de-pastor/Desktop/Un peut tout/poland_transport_datasets.xlsx'
+               'C:/Users/m-de-pastor/Desktop/Un peut tout/poland_transport_datasets.xlsx',
+               'C:/Users/m-de-pastor/Desktop/Un peut tout/norvege.xlsx'
                ]
 
-pays = ['Irlande', 'Luxembourg', 'Espagne', 'Italie', 'Belgique', 'Chypre', 'Suisse', 'UK', 'Germany', 'Poland']
+pays = ['Irlande', 'Luxembourg', 'Espagne', 'Italie', 'Belgique', 'Chypre', 'Suisse', 'UK', 'Germany', 'Poland', 'Norway']
 
 dfs = []
 for file, country in zip(excel_files, pays):        #ajout d'une colonne pays
